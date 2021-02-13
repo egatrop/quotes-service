@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+
+    <body>
+        <button id="connect">Connect</button>
+        <br>
+        <button id="disconnect">Disconnect</button>
+        <script>
+            var stompClient = {
+                client: null,
+                socket: null,
+                connect: function () {
+                    this.socket = new SockJS('http://localhost:8081/websocket');
+                    this.client = Stomp.over(this.socket);
+                    this.client.connect({}, function (frame) {
+                        stompClient.client.subscribe('/topic/hot-price', function (events) {
+                            stompClient.consume(events);
+                        });
+                    });
+                },
+                consume: function (raw) {
+                   console.log(raw);
+                },
+                close: function () {
+                    if (this.client != null && this.client != undefined) {
+                        this.client.unsubscribe('/topic/hot-price');
+                        this.client.disconnect();
+                        this.client = null;
+                    }
+                }
+            };
+
+            $("#disconnect").click(function() {
+                stompClient.close();
+            });
+
+            $("#connect").click(function() {
+                stompClient.connect();
+            });
+        </script>
+    </body>
+</html>

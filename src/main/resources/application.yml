@@ -6,13 +6,18 @@ server:
 spring:
   partners:
     ws:
-      host: ${PARTNERS_HOST:localhost}
-      port: ${PARTNERS_PORT:8080}
-      stream-instruments: instruments
-      stream-quotes: quotes
+      client:
+        host: ${PARTNERS_HOST:localhost}
+        port: ${PARTNERS_PORT:8080}
+        stream-instruments: instruments
+        stream-quotes: quotes
+      server:
+        topic-name: /topic/hot-price
+        prefix: websocket
   service:
-    quotes-buffer: 10
+    quotes-buffer: 50
     history-period: 30
+    hot-price-interval: 5
   redis:
     host: ${REDIS_HOST:localhost}
     port: ${REDIS_PORT:6379}

@@ -1,6 +1,7 @@
 package com.yivanou.quotes.service.impl;
 
 import com.yivanou.quotes.config.ServiceProperties;
+import com.yivanou.quotes.config.WSServerProperties;
 import com.yivanou.quotes.repository.ICandleRepository;
 import com.yivanou.quotes.repository.entity.CandleStick;
 import com.yivanou.quotes.service.IInstrumentsService;
@@ -9,13 +10,14 @@ import com.yivanou.quotes.service.dto.CandleStickDto;
 import com.yivanou.quotes.service.exception.InstrumentNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +38,12 @@ public class InstrumentsService implements IInstrumentsService {
 
     @Autowired
     private final ServiceProperties properties;
+
+    @Autowired
+    private final SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    private final WSServerProperties serverProperties;
 
     private final Set<String> validIsins = ConcurrentHashMap.newKeySet();
 
@@ -73,27 +81,41 @@ public class InstrumentsService implements IInstrumentsService {
         return getHistory(isin, properties.getHistoryPeriod());
     }
 
-    private List<CandleStickDto> getHistory(String isin, int lastMinutes) {
+    @Override
+    public void recalculateHotPrices() {
+        // todo implements calculation
+    }
+
+    private void publish(String s) {
+        messagingTemplate.convertAndSend(serverProperties.getTopicName(), s);
+    }
+
+    @PostConstruct
+    public void init() {
+        validIsins.addAll(repository.getKeys());
+    }
+
+    private LinkedList<CandleStickDto> getHistory(String isin, int lastMinutes) {
         if (!validIsins.contains(isin))
             throw new InstrumentNotFoundException(String.format("Instrument with isin=%s not found", isin));
 
-        final List<CandleStickDto> result = new ArrayList<>();
-        final LinkedList<ZonedDateTime> historyMinutes = generateLastNMinutesRange(lastMinutes);
-        final LinkedList<CandleStickDto> existing = getLastCandles(isin);
+        final LinkedList<CandleStickDto> result = new LinkedList<>();
+        final LinkedList<ZonedDateTime> historyInterval = generateLastNMinutesRange(lastMinutes);
+        final LinkedList<CandleStickDto> existingCandles = getLastCandles(isin);
 
-        while (!existing.isEmpty() && !historyMinutes.isEmpty()) {
-            final ZonedDateTime minute = historyMinutes.getFirst();
-            final CandleStickDto lastExisting = existing.getLast();
+        while (!existingCandles.isEmpty() && !historyInterval.isEmpty()) {
+            final ZonedDateTime minute = historyInterval.getFirst();
+            final CandleStickDto lastExisting = existingCandles.getLast();
 
             if (minute.isAfter(lastExisting.getCloseTimeStamp()) || minute.isEqual(lastExisting.getCloseTimeStamp())) {
-                final CandleStickDto dto = existing.getLast().toBuilder()
+                final CandleStickDto dto = existingCandles.getLast().toBuilder()
                         .openTimeStamp(minute.minusMinutes(1))
                         .closeTimeStamp(minute)
                         .build();
                 result.add(dto);
-                historyMinutes.removeFirst();
+                historyInterval.removeFirst();
             } else {
-                existing.removeLast();
+                existingCandles.removeLast();
             }
         }
 

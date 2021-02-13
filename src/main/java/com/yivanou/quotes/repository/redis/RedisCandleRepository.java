@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 public class RedisCandleRepository implements ICandleRepository {
 
     @Autowired
-    private RedisCommands<String, CandleStick> commands;
+    private final RedisCommands<String, CandleStick> commands;
 
     @Override
     public void persist(String isin, CandleStick candleStick) {
@@ -41,5 +42,10 @@ public class RedisCandleRepository implements ICandleRepository {
     @Override
     public LinkedList<CandleStick> getByIsin(String isin) {
         return new LinkedList<>(commands.lrange(isin, 0, -1));
+    }
+
+    @Override
+    public List<String> getKeys() {
+        return commands.keys("*");
     }
 }

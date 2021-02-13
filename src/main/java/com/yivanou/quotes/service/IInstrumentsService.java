@@ -17,4 +17,6 @@ public interface IInstrumentsService {
     Map<String, BigDecimal> getLatestPrices();
 
     List<CandleStickDto> getHistory(String isin);
+
+    void recalculateHotPrices();
 }

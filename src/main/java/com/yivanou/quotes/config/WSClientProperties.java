@@ -10,9 +10,8 @@ import org.springframework.stereotype.Component;
 @Setter
 @NoArgsConstructor
 @Component
-@ConfigurationProperties(prefix = "spring.partners.ws")
-public class WSProperties {
-
+@ConfigurationProperties(prefix = "spring.partners.ws.client")
+public class WSClientProperties {
     private String host;
     private String port;
     private String streamInstruments;

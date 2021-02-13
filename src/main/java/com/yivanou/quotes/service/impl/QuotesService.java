@@ -26,19 +26,19 @@ public class QuotesService implements IQuotesService {
     private final List<QuoteEvent> tempEvents = new ArrayList<>();
 
     @Autowired
-    private IInstrumentsService instrumentsService;
+    private final IInstrumentsService instrumentsService;
 
     @Autowired
-    private IQuotesQueue quotesQueue;
+    private final IQuotesQueue quotesQueue;
 
     @Autowired
-    private ServiceProperties properties;
+    private final ServiceProperties properties;
 
     @Autowired
-    private CandlestickBuilder converter;
+    private final CandlestickBuilder converter;
 
     @Autowired
-    private ICandleRepository repository;
+    private final ICandleRepository repository;
 
     public void flushToRepository(ZonedDateTime timestamp) {
         quotesQueue.pollAll().stream()

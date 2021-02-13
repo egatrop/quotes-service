@@ -27,7 +27,7 @@ import java.util.Map;
 public class InstrumentsController {
 
     @Autowired
-    private IInstrumentsService service;
+    private final IInstrumentsService service;
 
     @GetMapping
     public ResponseEntity<Map<String, BigDecimal>> getAll() {

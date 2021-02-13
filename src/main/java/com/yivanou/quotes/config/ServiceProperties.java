@@ -14,4 +14,5 @@ import org.springframework.stereotype.Component;
 public class ServiceProperties {
     private Integer quotesBuffer;
     private Integer historyPeriod;
+    private Integer hotPriceInterval;
 }

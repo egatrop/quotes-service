@@ -10,8 +10,8 @@ import org.springframework.stereotype.Component;
 @Setter
 @NoArgsConstructor
 @Component
-@ConfigurationProperties(prefix = "spring.redis")
-public class RedisProperties {
-    private String host;
-    private Integer port;
+@ConfigurationProperties(prefix = "spring.partners.ws.server")
+public class WSServerProperties {
+    private String topicName;
+    private String prefix;
 }
