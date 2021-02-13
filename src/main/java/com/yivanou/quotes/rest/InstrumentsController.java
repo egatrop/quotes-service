@@ -1,6 +1,6 @@
 package com.yivanou.quotes.rest;
 
-import com.yivanou.quotes.service.InstrumentsService;
+import com.yivanou.quotes.service.IInstrumentsService;
 import com.yivanou.quotes.service.dto.CandleStickDto;
 import com.yivanou.quotes.service.exception.InstrumentNotFoundException;
 import lombok.Getter;
@@ -27,7 +27,7 @@ import java.util.Map;
 public class InstrumentsController {
 
     @Autowired
-    private InstrumentsService service;
+    private IInstrumentsService service;
 
     @GetMapping
     public ResponseEntity<Map<String, BigDecimal>> getAll() {

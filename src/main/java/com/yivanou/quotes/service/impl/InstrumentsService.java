@@ -1,13 +1,13 @@
-package com.yivanou.quotes.service;
+package com.yivanou.quotes.service.impl;
 
 import com.yivanou.quotes.config.ServiceProperties;
 import com.yivanou.quotes.repository.ICandleRepository;
 import com.yivanou.quotes.repository.entity.CandleStick;
+import com.yivanou.quotes.service.IInstrumentsService;
 import com.yivanou.quotes.service.converter.CandleStickConverter;
 import com.yivanou.quotes.service.dto.CandleStickDto;
 import com.yivanou.quotes.service.exception.InstrumentNotFoundException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -24,10 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Slf4j
 @Component
 @RequiredArgsConstructor
-public class InstrumentsService {
+public class InstrumentsService implements IInstrumentsService {
 
     @Autowired
     private final ICandleRepository repository;
@@ -40,19 +39,23 @@ public class InstrumentsService {
 
     private final Set<String> validIsins = ConcurrentHashMap.newKeySet();
 
-    public Set<String> getAvailableInstruments() {
-        return validIsins;
+    @Override
+    public boolean isValid(String isin) {
+        return validIsins.contains(isin);
     }
 
+    @Override
     public void addInstrument(String isin) {
         validIsins.add(isin);
     }
 
+    @Override
     public void deleteInstrument(String isin) {
         validIsins.remove(isin);
         repository.delete(isin);
     }
 
+    @Override
     public Map<String, BigDecimal> getLatestPrices() {
         final Map<String, CandleStick> existing = repository.getLastCandleForAll();
 
@@ -65,12 +68,17 @@ public class InstrumentsService {
                 );
     }
 
+    @Override
     public List<CandleStickDto> getHistory(String isin) {
+        return getHistory(isin, properties.getHistoryPeriod());
+    }
+
+    private List<CandleStickDto> getHistory(String isin, int lastMinutes) {
         if (!validIsins.contains(isin))
             throw new InstrumentNotFoundException(String.format("Instrument with isin=%s not found", isin));
 
         final List<CandleStickDto> result = new ArrayList<>();
-        final LinkedList<ZonedDateTime> historyMinutes = generateLastNMinutesRange();
+        final LinkedList<ZonedDateTime> historyMinutes = generateLastNMinutesRange(lastMinutes);
         final LinkedList<CandleStickDto> existing = getLastCandles(isin);
 
         while (!existing.isEmpty() && !historyMinutes.isEmpty()) {
@@ -99,10 +107,10 @@ public class InstrumentsService {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    private LinkedList<ZonedDateTime> generateLastNMinutesRange() {
+    private LinkedList<ZonedDateTime> generateLastNMinutesRange(int lastMinutes) {
         return Stream
                 .iterate(ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES).withZoneSameInstant(ZoneId.of("UTC")), m -> m.minusMinutes(1))
-                .limit(properties.getHistoryPeriod())
+                .limit(lastMinutes)
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 }

@@ -1,6 +1,6 @@
 package com.yivanou.quotes.task;
 
-import com.yivanou.quotes.service.QuotesService;
+import com.yivanou.quotes.service.IQuotesService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,14 +16,13 @@ import java.time.ZonedDateTime;
 public class FlushQuotesToRepositoryJob {
 
     @Autowired
-    private QuotesService quoteService;
-
+    private IQuotesService quoteService;
 
     /**
      * The method called each minute to flush data from queue
      * to repository
      * */
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(cron = "*/10 * * * * *")
     public void runJob() {
         quoteService.flushToRepository(ZonedDateTime.now().withZoneSameInstant(ZoneId.of("UTC")).minusMinutes(1));
     }

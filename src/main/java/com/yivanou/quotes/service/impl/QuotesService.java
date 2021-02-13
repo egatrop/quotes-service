@@ -1,7 +1,10 @@
-package com.yivanou.quotes.service;
+package com.yivanou.quotes.service.impl;
 
 import com.yivanou.quotes.config.ServiceProperties;
 import com.yivanou.quotes.repository.ICandleRepository;
+import com.yivanou.quotes.service.IInstrumentsService;
+import com.yivanou.quotes.service.IQuotesQueue;
+import com.yivanou.quotes.service.IQuotesService;
 import com.yivanou.quotes.ws.dto.quote.QuoteEvent;
 import com.yivanou.quotes.ws.dto.quote.QuoteEventData;
 import lombok.RequiredArgsConstructor;
@@ -12,22 +15,21 @@ import org.springframework.context.annotation.Configuration;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import static java.util.stream.Collectors.groupingBy;
 
 @Configuration
 @Slf4j
 @RequiredArgsConstructor
-public class QuotesService {
+public class QuotesService implements IQuotesService {
 
     private final List<QuoteEvent> tempEvents = new ArrayList<>();
 
     @Autowired
-    private InstrumentsService instrumentsService;
+    private IInstrumentsService instrumentsService;
 
     @Autowired
-    private QuotesQueue quotesQueue;
+    private IQuotesQueue quotesQueue;
 
     @Autowired
     private ServiceProperties properties;
@@ -39,18 +41,14 @@ public class QuotesService {
     private ICandleRepository repository;
 
     public void flushToRepository(ZonedDateTime timestamp) {
-        final Set<String> availableInstruments = instrumentsService.getAvailableInstruments();
-
-        final List<QuoteEvent> events = quotesQueue.pollAll();
-
-        events.stream()
+        quotesQueue.pollAll().stream()
                 .map(QuoteEvent::getData)
-                .filter(eventData -> availableInstruments.contains(eventData.getIsin()))
+                .filter(eventData -> instrumentsService.isValid(eventData.getIsin()))
                 .collect(groupingBy(QuoteEventData::getIsin))
                 .forEach((key, value) -> repository.persist(key, converter.toCandleStick(value, timestamp)));
     }
 
-    public void add(QuoteEvent event) {
+    public void accumulate(QuoteEvent event) {
         if (tempEvents.size() <= properties.getQuotesBuffer()) {
             tempEvents.add(event);
         } else {

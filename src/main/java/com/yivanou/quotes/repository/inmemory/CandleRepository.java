@@ -1,5 +1,6 @@
-package com.yivanou.quotes.repository;
+package com.yivanou.quotes.repository.inmemory;
 
+import com.yivanou.quotes.repository.ICandleRepository;
 import com.yivanou.quotes.repository.entity.CandleStick;
 import lombok.extern.slf4j.Slf4j;
 

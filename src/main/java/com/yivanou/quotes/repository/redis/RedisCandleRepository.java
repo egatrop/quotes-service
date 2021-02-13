@@ -1,4 +1,4 @@
-package com.yivanou.quotes.redis;
+package com.yivanou.quotes.repository.redis;
 
 import com.yivanou.quotes.repository.ICandleRepository;
 import com.yivanou.quotes.repository.entity.CandleStick;
@@ -23,14 +23,14 @@ public class RedisCandleRepository implements ICandleRepository {
 
     @Override
     public void persist(String isin, CandleStick candleStick) {
-        commands.rpush(isin, candleStick);
-        log.info("New candle inserted isin={}, candle={}", isin, candleStick);
+        long size = commands.rpush(isin, candleStick);
+        log.info("New candle inserted isin={}, candle={}, size={}", isin, candleStick, size);
     }
 
     @Override
     public void delete(String isin) {
-        commands.del(isin);
-        log.info("Candles removed for isin={}", isin);
+        long deleted = commands.del(isin);
+        log.info("Candles removed for isin={} number of keys {}", isin, deleted);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.yivanou.quotes.service;
+package com.yivanou.quotes.service.impl;
 
 import com.yivanou.quotes.repository.entity.CandleStick;
 import com.yivanou.quotes.ws.dto.quote.QuoteEventData;

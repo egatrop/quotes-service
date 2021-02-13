@@ -1,16 +1,16 @@
 package com.yivanou.quotes.ws.client;
 
 import com.yivanou.quotes.config.WSProperties;
-import com.yivanou.quotes.service.InstrumentsService;
+import com.yivanou.quotes.service.IInstrumentsService;
 import com.yivanou.quotes.ws.dto.instrument.InstrumentEvent;
 
 import java.net.URI;
 
 public class InstrumentsWsClient extends AbstractWSClient<InstrumentEvent> {
 
-    private final InstrumentsService service;
+    private final IInstrumentsService service;
 
-    public InstrumentsWsClient(WSProperties properties, InstrumentsService service) {
+    public InstrumentsWsClient(WSProperties properties, IInstrumentsService service) {
         super(URI.create("ws://" + properties.getHost() + ":" + properties.getPort() + "/" + properties.getStreamInstruments()), InstrumentEvent.class);
         this.service = service;
     }
