@@ -15,11 +15,11 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -37,28 +37,31 @@ public class InstrumentsService {
     @Autowired
     private final ServiceProperties properties;
 
+    private final Set<String> validIsins = ConcurrentHashMap.newKeySet();
+
     public Set<String> getAvailableInstruments() {
-        return new HashSet<>(repository.getValidIsins());
+        return validIsins;
     }
 
     public void addInstrument(String isin) {
-        repository.addValidIsin(isin);
+        validIsins.add(isin);
     }
 
     public void deleteInstrument(String isin) {
+        validIsins.remove(isin);
         repository.delete(isin);
     }
 
     public Map<String, BigDecimal> getLatestPrices() {
-        return repository.getAll().entrySet().stream()
+        return repository.getLastCandleForAll().entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> e.getValue().isEmpty() ? BigDecimal.ZERO : e.getValue().getLast().getClosePrice())
+                        e -> e.getValue().getClosePrice())
                 );
     }
 
     public List<CandleStickDto> getHistory(String isin) {
-        if (!getAvailableInstruments().contains(isin))
+        if (!validIsins.contains(isin))
             throw new InstrumentNotFoundException(String.format("Instrument with isin=%s not found", isin));
 
         final List<CandleStickDto> result = new ArrayList<>();

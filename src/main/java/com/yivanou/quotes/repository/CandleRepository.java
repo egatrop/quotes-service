@@ -2,24 +2,17 @@ package com.yivanou.quotes.repository;
 
 import com.yivanou.quotes.repository.entity.CandleStick;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-@Component
+//@Component
 @Slf4j
 public class CandleRepository implements ICandleRepository {
 
     private final Map<String, LinkedList<CandleStick>> sticks = new ConcurrentHashMap<>();
-
-    @Override
-    public void addValidIsin(String isin) {
-        sticks.put(isin, new LinkedList<>());
-    }
 
     @Override
     public void persist(String isin, CandleStick candleStick) {
@@ -34,13 +27,8 @@ public class CandleRepository implements ICandleRepository {
     }
 
     @Override
-    public Set<String> getValidIsins() {
-        return sticks.keySet();
-    }
-
-    @Override
-    public Map<String, LinkedList<CandleStick>> getAll() {
-        return Collections.unmodifiableMap(sticks);
+    public Map<String, CandleStick> getLastCandleForAll() {
+        return sticks.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().getFirst()));
     }
 
     @Override
