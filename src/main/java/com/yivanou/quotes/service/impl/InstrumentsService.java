@@ -1,16 +1,16 @@
 package com.yivanou.quotes.service.impl;
 
 import com.yivanou.quotes.config.ServiceProperties;
-import com.yivanou.quotes.config.WSServerProperties;
 import com.yivanou.quotes.repository.ICandleRepository;
 import com.yivanou.quotes.repository.entity.CandleStick;
 import com.yivanou.quotes.service.IInstrumentsService;
+import com.yivanou.quotes.service.PriceAdviser;
 import com.yivanou.quotes.service.converter.CandleStickConverter;
 import com.yivanou.quotes.service.dto.CandleStickDto;
 import com.yivanou.quotes.service.exception.InstrumentNotFoundException;
+import com.yivanou.quotes.ws.PricePublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -21,8 +21,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,10 +42,10 @@ public class InstrumentsService implements IInstrumentsService {
     private final ServiceProperties properties;
 
     @Autowired
-    private final SimpMessagingTemplate messagingTemplate;
+    private final PriceAdviser hotPriceAdviser;
 
     @Autowired
-    private final WSServerProperties serverProperties;
+    private PricePublisher pricePublisher;
 
     private final Set<String> validIsins = ConcurrentHashMap.newKeySet();
 
@@ -83,11 +85,17 @@ public class InstrumentsService implements IInstrumentsService {
 
     @Override
     public void recalculateHotPrices() {
-        // todo implements calculation
-    }
-
-    private void publish(String s) {
-        messagingTemplate.convertAndSend(serverProperties.getTopicName(), s);
+        validIsins.stream()
+                .collect(Collectors.toMap(Function.identity(), isin -> getHistory(isin, properties.getHotPriceInterval())))
+                .entrySet().stream()
+                .filter(e -> e.getValue().size() == properties.getHotPriceInterval())
+                .map(e -> hotPriceAdviser.checkPrise(
+                        e.getKey(),
+                        e.getValue().getFirst().getClosePrice(),
+                        e.getValue().getLast().getClosePrice())
+                )
+                .filter(Objects::nonNull)
+                .forEach(pricePublisher::publish);
     }
 
     @PostConstruct
@@ -101,7 +109,7 @@ public class InstrumentsService implements IInstrumentsService {
 
         final LinkedList<CandleStickDto> result = new LinkedList<>();
         final LinkedList<ZonedDateTime> historyInterval = generateLastNMinutesRange(lastMinutes);
-        final LinkedList<CandleStickDto> existingCandles = getLastCandles(isin);
+        final LinkedList<CandleStickDto> existingCandles = getLastCandles(isin, lastMinutes);
 
         while (!existingCandles.isEmpty() && !historyInterval.isEmpty()) {
             final ZonedDateTime minute = historyInterval.getFirst();
@@ -122,10 +130,9 @@ public class InstrumentsService implements IInstrumentsService {
         return result;
     }
 
-    private LinkedList<CandleStickDto> getLastCandles(String isin) {
-        return repository.getByIsin(isin).stream()
+    private LinkedList<CandleStickDto> getLastCandles(String isin, Integer limit) {
+        return repository.getLastByIsin(isin, limit).stream()
                 .map(converter::toDto)
-                .limit(properties.getHistoryPeriod())
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 

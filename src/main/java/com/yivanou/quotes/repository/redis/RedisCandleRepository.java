@@ -40,8 +40,8 @@ public class RedisCandleRepository implements ICandleRepository {
     }
 
     @Override
-    public LinkedList<CandleStick> getByIsin(String isin) {
-        return new LinkedList<>(commands.lrange(isin, 0, -1));
+    public LinkedList<CandleStick> getLastByIsin(String isin, Integer limit) {
+        return new LinkedList<>(commands.lrange(isin, -limit, -1));
     }
 
     @Override

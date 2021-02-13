@@ -14,7 +14,7 @@ public interface ICandleRepository {
 
     Map<String, CandleStick> getLastCandleForAll();
 
-    LinkedList<CandleStick> getByIsin(String isin);
+    LinkedList<CandleStick> getLastByIsin(String isin, Integer limit);
 
     List<String> getKeys();
 }
