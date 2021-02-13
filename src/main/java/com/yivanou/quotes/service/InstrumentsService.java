@@ -2,6 +2,7 @@ package com.yivanou.quotes.service;
 
 import com.yivanou.quotes.config.ServiceProperties;
 import com.yivanou.quotes.repository.ICandleRepository;
+import com.yivanou.quotes.repository.entity.CandleStick;
 import com.yivanou.quotes.service.converter.CandleStickConverter;
 import com.yivanou.quotes.service.dto.CandleStickDto;
 import com.yivanou.quotes.service.exception.InstrumentNotFoundException;
@@ -53,10 +54,14 @@ public class InstrumentsService {
     }
 
     public Map<String, BigDecimal> getLatestPrices() {
-        return repository.getLastCandleForAll().entrySet().stream()
+        final Map<String, CandleStick> existing = repository.getLastCandleForAll();
+
+        validIsins.forEach(isin -> existing.putIfAbsent(isin, null));
+
+        return existing.entrySet().stream()
                 .collect(Collectors.toMap(
                         Map.Entry::getKey,
-                        e -> e.getValue().getClosePrice())
+                        e -> e.getValue() == null ? BigDecimal.ZERO : e.getValue().getClosePrice())
                 );
     }
 
@@ -65,7 +70,7 @@ public class InstrumentsService {
             throw new InstrumentNotFoundException(String.format("Instrument with isin=%s not found", isin));
 
         final List<CandleStickDto> result = new ArrayList<>();
-        final LinkedList<ZonedDateTime> historyMinutes = generateLastMinutesRange();
+        final LinkedList<ZonedDateTime> historyMinutes = generateLastNMinutesRange();
         final LinkedList<CandleStickDto> existing = getLastCandles(isin);
 
         while (!existing.isEmpty() && !historyMinutes.isEmpty()) {
@@ -94,7 +99,7 @@ public class InstrumentsService {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-    private LinkedList<ZonedDateTime> generateLastMinutesRange() {
+    private LinkedList<ZonedDateTime> generateLastNMinutesRange() {
         return Stream
                 .iterate(ZonedDateTime.now().truncatedTo(ChronoUnit.MINUTES).withZoneSameInstant(ZoneId.of("UTC")), m -> m.minusMinutes(1))
                 .limit(properties.getHistoryPeriod())
