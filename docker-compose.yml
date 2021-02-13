@@ -1,0 +1,17 @@
+version: '3.1'
+services:
+  quotes-service:
+    build:
+      context: .
+    ports:
+      - "8081:8081"
+      - "8080:8080"
+      - "5005:5005"
+    depends_on:
+      - redis
+    environment:
+      REDIS_HOST: redis
+      PARTNERS_HOST: ws://localhost:8080
+
+  redis:
+    image: redis:alpine

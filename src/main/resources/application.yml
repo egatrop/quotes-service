@@ -1,0 +1,14 @@
+server:
+  port: 8081
+  error:
+    include-message: always
+
+spring:
+  partners:
+    ws:
+      url: ${PARTNERS_HOST:ws://localhost:8080}
+      stream-instruments: instruments
+      stream-quotes: quotes
+  service:
+    quotes-buffer: 10
+    history-period: 30
