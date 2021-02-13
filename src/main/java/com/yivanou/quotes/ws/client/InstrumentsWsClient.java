@@ -11,7 +11,7 @@ public class InstrumentsWsClient extends AbstractWSClient<InstrumentEvent> {
     private final InstrumentsService service;
 
     public InstrumentsWsClient(WSProperties properties, InstrumentsService service) {
-        super(URI.create(properties.getUrl() + "/" + properties.getStreamInstruments()), InstrumentEvent.class);
+        super(URI.create("ws://" + properties.getHost() + ":" + properties.getPort() + "/" + properties.getStreamInstruments()), InstrumentEvent.class);
         this.service = service;
     }
 

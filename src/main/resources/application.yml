@@ -6,9 +6,13 @@ server:
 spring:
   partners:
     ws:
-      url: ${PARTNERS_HOST:ws://localhost:8080}
+      host: ${PARTNERS_HOST:localhost}
+      port: ${PARTNERS_PORT:8080}
       stream-instruments: instruments
       stream-quotes: quotes
   service:
     quotes-buffer: 10
     history-period: 30
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}

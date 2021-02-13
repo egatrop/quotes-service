@@ -13,7 +13,8 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "spring.partners.ws")
 public class WSProperties {
 
-    private String url;
+    private String host;
+    private String port;
     private String streamInstruments;
     private String streamQuotes;
 }

@@ -5,13 +5,12 @@ import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 @Component
 public class QuotesQueue {
 
-    private final BlockingQueue<QuoteEvent> queue = new ArrayBlockingQueue<>(1024);
+    private final ConcurrentLinkedQueue<QuoteEvent> queue = new ConcurrentLinkedQueue<>();
 
     public List<QuoteEvent> pollAll() {
         final List<QuoteEvent> events = Arrays.asList(queue.toArray(new QuoteEvent[0]));
@@ -21,9 +20,5 @@ public class QuotesQueue {
 
     public void addAll(List<QuoteEvent> event) {
         queue.addAll(event);
-    }
-
-    public int size() {
-        return queue.size();
     }
 }

@@ -1,7 +1,7 @@
 package com.yivanou.quotes.service;
 
 import com.yivanou.quotes.config.ServiceProperties;
-import com.yivanou.quotes.repository.CandleRepository;
+import com.yivanou.quotes.repository.ICandleRepository;
 import com.yivanou.quotes.ws.dto.quote.QuoteEvent;
 import com.yivanou.quotes.ws.dto.quote.QuoteEventData;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +36,7 @@ public class QuotesService {
     private CandlestickBuilder converter;
 
     @Autowired
-    private CandleRepository repository;
+    private ICandleRepository repository;
 
     public void flushToRepository(ZonedDateTime timestamp) {
         final Set<String> availableInstruments = instrumentsService.getAvailableInstruments();

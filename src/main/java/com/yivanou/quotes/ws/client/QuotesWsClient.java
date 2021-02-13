@@ -11,7 +11,7 @@ public class QuotesWsClient extends AbstractWSClient<QuoteEvent> {
     private final QuotesService service;
 
     public QuotesWsClient(WSProperties properties, QuotesService service) {
-        super(URI.create(properties.getUrl() + "/" + properties.getStreamQuotes()), QuoteEvent.class);
+        super(URI.create("ws://" + properties.getHost() + ":" + properties.getPort() + "/" + properties.getStreamQuotes()), QuoteEvent.class);
         this.service = service;
     }
 

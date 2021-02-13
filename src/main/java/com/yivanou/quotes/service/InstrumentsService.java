@@ -1,7 +1,7 @@
 package com.yivanou.quotes.service;
 
 import com.yivanou.quotes.config.ServiceProperties;
-import com.yivanou.quotes.repository.CandleRepository;
+import com.yivanou.quotes.repository.ICandleRepository;
 import com.yivanou.quotes.service.converter.CandleStickConverter;
 import com.yivanou.quotes.service.dto.CandleStickDto;
 import com.yivanou.quotes.service.exception.InstrumentNotFoundException;
@@ -29,7 +29,7 @@ import java.util.stream.Stream;
 public class InstrumentsService {
 
     @Autowired
-    private final CandleRepository repository;
+    private final ICandleRepository repository;
 
     @Autowired
     private final CandleStickConverter converter;
