@@ -79,6 +79,8 @@ The service provides two http endpoints and one websocket:
     {"isin":"RD567G2041M8","trend":"UP","change":45.5,"isHot":true}  
     ```
     [Example of consuming the socket](src/main/resources/static/index.html)
+    To test websocket open a browser and go to `localhost:8081`. Open dev tools and press `Connect` button. Once `hot-price`
+    is published a message will appear in console.
 
 ### Run tests locally
 `mvn clean test`
