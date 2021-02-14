@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -45,7 +44,7 @@ public class RedisCandleRepository implements ICandleRepository {
     }
 
     @Override
-    public List<String> getKeys() {
-        return commands.keys("*");
+    public void removeAllKeys() {
+        commands.flushall();
     }
 }

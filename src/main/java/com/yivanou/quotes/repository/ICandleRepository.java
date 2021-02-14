@@ -16,5 +16,5 @@ public interface ICandleRepository {
 
     LinkedList<CandleStick> getLastByIsin(String isin, Integer limit);
 
-    List<String> getKeys();
+    void removeAllKeys();
 }

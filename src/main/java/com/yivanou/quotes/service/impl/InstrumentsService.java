@@ -10,10 +10,11 @@ import com.yivanou.quotes.service.dto.PriceEvent;
 import com.yivanou.quotes.service.exception.InstrumentNotFoundException;
 import com.yivanou.quotes.ws.PricePublisher;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -30,6 +31,7 @@ import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class InstrumentsService implements IInstrumentsService {
 
     @Autowired
@@ -104,9 +106,10 @@ public class InstrumentsService implements IInstrumentsService {
                 .forEach(pricePublisher::publish);
     }
 
-    @PostConstruct
-    public void init() {
-        validIsins.addAll(repository.getKeys());
+    @PreDestroy
+    public void tearDown() {
+        log.info("Cleaning up data store");
+        repository.removeAllKeys();
     }
 
     private LinkedList<CandleStickDto> getHistoryDesc(String isin, int lastMinutes) {
