@@ -22,7 +22,7 @@ public class FlushQuotesToRepositoryJob {
      * The method called each minute to flush data from queue
      * to repository
      * */
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(fixedRate = 60_000, initialDelay = 60_000)
     public void runJob() {
         log.info("Flushing data to data storage");
         quoteService.flushToRepository(ZonedDateTime.now().withZoneSameInstant(ZoneId.of("UTC")).minusMinutes(1));

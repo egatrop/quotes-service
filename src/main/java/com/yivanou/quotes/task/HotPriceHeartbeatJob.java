@@ -18,7 +18,7 @@ public class HotPriceHeartbeatJob {
     /**
      * The method called each minute to recalculate hot prices
      * */
-    @Scheduled(cron = "0 */1 * * * *")
+    @Scheduled(fixedRate = 60_000, initialDelay = 60_000)
     public void runJob() {
         service.recalculateHotPrices();
     }
