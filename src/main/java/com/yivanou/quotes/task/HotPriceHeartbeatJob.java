@@ -20,10 +20,10 @@ public class HotPriceHeartbeatJob {
     private IInstrumentsService service;
 
     /**
-     * The method called each minute to flush data from queue
-     * to repository
+     * The method called each minute to recalculate hot prices
+     *
      * */
-    @Scheduled(cron = "* */5 * * * *")
+    @Scheduled(cron = "0 */1 * * * *")
     public void runJob() {
         service.recalculateHotPrices();
     }
