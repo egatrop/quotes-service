@@ -47,7 +47,7 @@ public class InstrumentsService implements IInstrumentsService {
     private final PriceAdviser hotPriceAdviser;
 
     @Autowired
-    private PricePublisher pricePublisher;
+    private final PricePublisher pricePublisher;
 
     private final Set<String> validIsins = ConcurrentHashMap.newKeySet();
 
