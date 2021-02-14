@@ -17,4 +17,5 @@ public class PriceEvent {
     private String isin;
     private String trend;
     private BigDecimal change;
+    private Boolean isHot;
 }

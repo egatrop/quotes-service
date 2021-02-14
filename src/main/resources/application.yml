@@ -18,6 +18,7 @@ spring:
     quotes-buffer: 50
     history-period: 30
     hot-price-interval: 5
+    hot-price-threshold: 10
   redis:
     host: ${REDIS_HOST:localhost}
     port: ${REDIS_PORT:6379}

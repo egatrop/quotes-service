@@ -4,9 +4,9 @@ import com.yivanou.quotes.config.ServiceProperties;
 import com.yivanou.quotes.repository.ICandleRepository;
 import com.yivanou.quotes.repository.entity.CandleStick;
 import com.yivanou.quotes.service.IInstrumentsService;
-import com.yivanou.quotes.service.PriceAdviser;
 import com.yivanou.quotes.service.converter.CandleStickConverter;
 import com.yivanou.quotes.service.dto.CandleStickDto;
+import com.yivanou.quotes.service.dto.PriceEvent;
 import com.yivanou.quotes.service.exception.InstrumentNotFoundException;
 import com.yivanou.quotes.ws.PricePublisher;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +49,8 @@ public class InstrumentsService implements IInstrumentsService {
 
     private final Set<String> validIsins = ConcurrentHashMap.newKeySet();
 
+    private final Map<String, PriceEvent> trends = new ConcurrentHashMap<>();
+
     @Override
     public boolean isValid(String isin) {
         return validIsins.contains(isin);
@@ -62,6 +64,7 @@ public class InstrumentsService implements IInstrumentsService {
     @Override
     public void deleteInstrument(String isin) {
         validIsins.remove(isin);
+        trends.remove(isin);
         repository.delete(isin);
     }
 
@@ -80,21 +83,24 @@ public class InstrumentsService implements IInstrumentsService {
 
     @Override
     public List<CandleStickDto> getHistory(String isin) {
-        return getHistory(isin, properties.getHistoryPeriod());
+        return getHistoryDesc(isin, properties.getHistoryPeriod());
     }
 
     @Override
     public void recalculateHotPrices() {
         validIsins.stream()
-                .collect(Collectors.toMap(Function.identity(), isin -> getHistory(isin, properties.getHotPriceInterval())))
+                .collect(Collectors.toMap(Function.identity(), isin -> getHistoryDesc(isin, properties.getHotPriceInterval())))
                 .entrySet().stream()
                 .filter(e -> e.getValue().size() == properties.getHotPriceInterval())
                 .map(e -> hotPriceAdviser.checkPrise(
                         e.getKey(),
                         e.getValue().getFirst().getClosePrice(),
-                        e.getValue().getLast().getClosePrice())
+                        e.getValue().getLast().getClosePrice(),
+                        trends.get(e.getKey()))
                 )
                 .filter(Objects::nonNull)
+                .peek(priceEvent -> trends.put(priceEvent.getIsin(), priceEvent))
+                .filter(PriceEvent::getIsHot)
                 .forEach(pricePublisher::publish);
     }
 
@@ -103,7 +109,7 @@ public class InstrumentsService implements IInstrumentsService {
         validIsins.addAll(repository.getKeys());
     }
 
-    private LinkedList<CandleStickDto> getHistory(String isin, int lastMinutes) {
+    private LinkedList<CandleStickDto> getHistoryDesc(String isin, int lastMinutes) {
         if (!validIsins.contains(isin))
             throw new InstrumentNotFoundException(String.format("Instrument with isin=%s not found", isin));
 

@@ -20,6 +20,7 @@ public class PricePublisher {
     private final WSServerProperties serverProperties;
 
     public void publish(PriceEvent event) {
+        log.info("Hot price! {}", event.getIsin());
         messagingTemplate.convertAndSend(serverProperties.getTopicName(), event);
     }
 }
