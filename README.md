@@ -90,6 +90,8 @@ The service provides two http endpoints and one websocket:
 Websocket will be available on the same port.
 
 ### Answers to the questions & Possible improvements
+- Implement mechanism of reconnecting to Partner's service. Current implementation implies that Partner's service is up and running
+  at the moment the service starts
 - Add Open API specification for http endpoints
 - Add integration and end-to-end tests. Due to the lack of time I did not manage to add them.
 - Consider calculating and inserting of missing candles rather than compute them when requested. It is arguable though
