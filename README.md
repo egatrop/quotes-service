@@ -86,3 +86,12 @@ The service provides two http endpoints and one websocket:
 ### Build service and run locally
 `docker-compose up --build ` Will build docker image and run it along with redis and Partner's service image. Rest API will be available on `8081`.
 Websocket will be available on the same port.
+
+### Answers
+
+### Possible improvements
+- Consider calculating and inserting missing candles rather than compute them when requested. But it is arguable
+- Introduce caching for responses as long as data is changed each minute. So we can reduce load by returning cached results if data was not changed
+
+### Questions
+- How often should the service recalculate hot price: each 5 minutes or each minute?
