@@ -54,7 +54,7 @@ public class InstrumentsService implements IInstrumentsService {
     private final Map<String, PriceEvent> trends = new ConcurrentHashMap<>();
 
     @Override
-    public boolean isValid(String isin) {
+    public boolean exists(String isin) {
         return validIsins.contains(isin);
     }
 

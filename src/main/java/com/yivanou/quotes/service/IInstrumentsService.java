@@ -8,7 +8,7 @@ import java.util.Map;
 
 public interface IInstrumentsService {
 
-    boolean isValid(String isin);
+    boolean exists(String isin);
 
     void addInstrument(String isin);
 

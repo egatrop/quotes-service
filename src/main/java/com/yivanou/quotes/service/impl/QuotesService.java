@@ -43,7 +43,7 @@ public class QuotesService implements IQuotesService {
     public void flushToRepository(ZonedDateTime timestamp) {
         quotesQueue.pollAll().stream()
                 .map(QuoteEvent::getData)
-                .filter(eventData -> instrumentsService.isValid(eventData.getIsin()))
+                .filter(eventData -> instrumentsService.exists(eventData.getIsin()))
                 .collect(groupingBy(QuoteEventData::getIsin))
                 .forEach((key, value) -> repository.persist(key, converter.toCandleStick(value, timestamp)));
     }
