@@ -88,22 +88,3 @@ The service provides two http endpoints and one websocket:
 ### Build service and run locally
 `docker-compose up --build ` Will build docker image and run it along with redis and Partner's service image. Rest API will be available on `8081`.
 Websocket will be available on the same port.
-
-### Answers to the questions & Possible improvements
-- Implement mechanism of reconnecting to Partner's service. Current implementation implies that Partner's service is up and running
-  at the moment the service starts
-- Add Open API specification for http endpoints
-- Add integration and end-to-end tests. Due to the lack of time I did not manage to add them.
-- Consider calculating and inserting of missing candles rather than compute them when requested. It is arguable though
-- Introduce caching for http responses as long as data is changed each minute. So we can reduce load by returning cached
-  results if data was not changed
-- Introduce load balancing based on `isin`. Use multiple instances of the service to handle specific 'range' of `isins`.
-- Introduce external message broker(kafka, rabbitmq, etc.) for publishing events and create another service 
-  which will be responsible for retranslation the events coming from message broker to websocket.
-  This mechanism will allow scaling the service horizontally.
-- Split service, e.g. in three independent services: the first is responsible for aggregating data,
-  the second is responsible for handling http requests, and the third is responsible for calculating `hot prices` and publishing.
-  Such approach will allow scaling of services independently.
-
-### Questions
-- How often should the service recalculate hot price: each 5 minutes or each minute?
